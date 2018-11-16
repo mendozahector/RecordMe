@@ -28,19 +28,16 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         if isRecording {
             
-            finishAudioRecording(success: true)
-            recordButton.setTitle("Record", for: .normal)
-            playButton.isEnabled = true
-            isRecording = false
+            audioRecorder.stop()
         } else {
             
             setupRecorder()
             
             audioRecorder.record()
+            isRecording = true
             meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
             recordButton.setTitle("Stop", for: .normal)
             playButton.isEnabled = false
-            isRecording = true
         }
         
     }
@@ -50,10 +47,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         if isPlaying {
             
-            audioPlayer.stop()
-            recordButton.isEnabled = true
-            playButton.setTitle("Play", for: .normal)
-            isPlaying = false
+            finishAudioPlaying(success: true)
         } else {
             
             if FileManager.default.fileExists(atPath: getFileUrl().path) {
@@ -63,6 +57,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
                 setupPlay()
                 audioPlayer.play()
                 isPlaying = true
+                meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
             } else {
                 
                 displayAlert(title: "Error", message: "Audio file is missing.")
@@ -75,14 +70,22 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     
     @objc func updateAudioMeter(timer: Timer) {
         
-        if audioRecorder.isRecording {
+//        if isRecording {
+//
+//            let hr = Int((audioRecorder.currentTime / 60) / 60)
+//            let min = Int(audioRecorder.currentTime / 60)
+//            let sec = Int(audioRecorder.currentTime.truncatingRemainder(dividingBy: 60))
+//            let timeString = String(format: "%02d:%02d:%02d", hr, min, sec)
+//            timeLabel.text = timeString
+//        }
+        
+        if isPlaying {
             
-            let hr = Int((audioRecorder.currentTime / 60) / 60)
-            let min = Int(audioRecorder.currentTime / 60)
-            let sec = Int(audioRecorder.currentTime.truncatingRemainder(dividingBy: 60))
+            let hr = Int((audioPlayer.currentTime / 60) / 60)
+            let min = Int(audioPlayer.currentTime / 60)
+            let sec = Int(audioPlayer.currentTime.truncatingRemainder(dividingBy: 60))
             let timeString = String(format: "%02d:%02d:%02d", hr, min, sec)
             timeLabel.text = timeString
-            audioRecorder.updateMeters()
         }
         
     }
@@ -90,29 +93,42 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     
     func finishAudioRecording(success: Bool) {
         
-        if success {
-            
-            audioRecorder.stop()
-            audioRecorder = nil
-            meterTimer.invalidate()
-        } else {
+        if !success {
             
             displayAlert(title: "Error", message: "Recording failed.")
         }
         
+        meterTimer.invalidate()
+        audioRecorder = nil
+        recordButton.setTitle("Record", for: .normal)
+        playButton.isEnabled = true
+        isRecording = false
+        timeLabel.text = "00:00:00"
+    }
+    
+    
+    func finishAudioPlaying(success: Bool) {
+        
+        if !success {
+            
+            displayAlert(title: "Error", message: "Could not play audio file.")
+        }
+        
+        audioPlayer.stop()
+        recordButton.isEnabled = true
+        playButton.setTitle("Play", for: .normal)
+        isPlaying = false
+        timeLabel.text = "00:00:00"
     }
     
     
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-        if !flag {
-            finishAudioRecording(success: false)
-        }
-        playButton.isEnabled = true
+        finishAudioRecording(success: flag)
     }
     
     
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        recordButton.isEnabled = true
+        finishAudioPlaying(success: flag)
     }
     
     
@@ -123,6 +139,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     }
     
     
+    //Check's if we have microphone usage permission (.plist)
     func checkRecordPermission() {
         
         switch AVAudioSession.sharedInstance().recordPermission {
@@ -160,7 +177,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     //Directory + fileName = filePath
     func getFileUrl() -> URL {
         
-        let fileName = "myRecording.m4a"
+        let fileName = "myRecording1.m4a"
         let filePath = getDirectory().appendingPathComponent(fileName)
         return filePath
     }
@@ -184,7 +201,6 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
                 
                 audioRecorder = try AVAudioRecorder(url: getFileUrl(), settings: settings)
                 audioRecorder.delegate = self
-                audioRecorder.isMeteringEnabled = true
                 audioRecorder.prepareToRecord()
             } catch let error {
                 displayAlert(title: "Could not setup recorder", message: error.localizedDescription)
