@@ -31,13 +31,15 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
             audioRecorder.stop()
         } else {
             
-            setupRecorder()
+            if setupRecorder() {
+                
+                audioRecorder.record()
+                isRecording = true
+                meterTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
+                recordButton.setTitle("Stop", for: .normal)
+                playButton.isEnabled = false
+            }
             
-            audioRecorder.record()
-            isRecording = true
-            meterTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
-            recordButton.setTitle("Stop", for: .normal)
-            playButton.isEnabled = false
         }
         
     }
@@ -52,12 +54,15 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
             
             if FileManager.default.fileExists(atPath: getFileUrl().path) {
                 
-                recordButton.isEnabled = false
-                playButton.setTitle("Stop", for: .normal)
-                setupPlay()
-                audioPlayer.play()
-                isPlaying = true
-                meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
+                if setupPlay() {
+                    
+                    audioPlayer.play()
+                    isPlaying = true
+                    meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
+                    playButton.setTitle("Stop", for: .normal)
+                    recordButton.isEnabled = false
+                }
+                
             } else {
                 
                 displayAlert(title: "Error", message: "Audio file is missing.")
@@ -194,13 +199,14 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         switch reason {
         case .newDeviceAvailable:
             if isRecording {
-                
                 audioRecorder.stop()
             }
         case .oldDeviceUnavailable:
             if isRecording {
-                
                 audioRecorder.stop()
+            }
+            if isPlaying {
+                audioPlayer.pause()
             }
         default: ()
         }
@@ -225,7 +231,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     }
     
     
-    func setupRecorder() {
+    func setupRecorder() -> Bool {
         
         if isAudioRecordingGranted {
             
@@ -244,28 +250,33 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
                 audioRecorder = try AVAudioRecorder(url: getFileUrl(), settings: settings)
                 audioRecorder.delegate = self
                 audioRecorder.prepareToRecord()
+                return true
             } catch let error {
-                displayAlert(title: "Could not setup recorder", message: error.localizedDescription)
+                displayAlert(title: "Error", message: error.localizedDescription)
+                return false
             }
             
         } else {
             
-            displayAlert(title: "Error", message: "App does not have access to your microphone")
+            displayAlert(title: "Error", message: "App does not have permission to use your microphone.")
+            return false
         }
         
     }
     
     
-    func setupPlay() {
+    func setupPlay() -> Bool {
         
         do {
             
             audioPlayer = try AVAudioPlayer(contentsOf: getFileUrl())
             audioPlayer.delegate = self
             audioPlayer.prepareToPlay()
+            return true
         } catch {
             
-            displayAlert(title: "Error", message: "Could not setup play function")
+            displayAlert(title: "Error", message: "Could not setup play function.")
+            return false
         }
         
     }
