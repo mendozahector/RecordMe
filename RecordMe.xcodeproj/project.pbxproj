@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		10357529071414124DADDAA9 /* Pods_RecordMe.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 231B4DDC896E5C03242749E0 /* Pods_RecordMe.framework */; };
 		3E2B2099219C7DCE00EF472A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2B2098219C7DCE00EF472A /* AppDelegate.swift */; };
 		3E2B209B219C7DCE00EF472A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2B209A219C7DCE00EF472A /* ViewController.swift */; };
 		3E2B209E219C7DCE00EF472A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3E2B209C219C7DCE00EF472A /* Main.storyboard */; };
@@ -16,7 +15,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		231B4DDC896E5C03242749E0 /* Pods_RecordMe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RecordMe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3E2B2095219C7DCE00EF472A /* RecordMe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecordMe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3E2B2098219C7DCE00EF472A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3E2B209A219C7DCE00EF472A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -24,8 +22,6 @@
 		3E2B209F219C7DD000EF472A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3E2B20A2219C7DD000EF472A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3E2B20A4219C7DD000EF472A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BCE4A4F11E0D5273B8C258E8 /* Pods-RecordMe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RecordMe.debug.xcconfig"; path = "Pods/Target Support Files/Pods-RecordMe/Pods-RecordMe.debug.xcconfig"; sourceTree = "<group>"; };
-		D628A3E3E3C3DF55FE72D377 /* Pods-RecordMe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RecordMe.release.xcconfig"; path = "Pods/Target Support Files/Pods-RecordMe/Pods-RecordMe.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,37 +29,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				10357529071414124DADDAA9 /* Pods_RecordMe.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0D1A2CE269114B2BD9EB25CE /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				BCE4A4F11E0D5273B8C258E8 /* Pods-RecordMe.debug.xcconfig */,
-				D628A3E3E3C3DF55FE72D377 /* Pods-RecordMe.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
-		1707A1850FAC8B2EDAED2FC7 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				231B4DDC896E5C03242749E0 /* Pods_RecordMe.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		3E2B208C219C7DCE00EF472A = {
 			isa = PBXGroup;
 			children = (
 				3E2B2097219C7DCE00EF472A /* RecordMe */,
 				3E2B2096219C7DCE00EF472A /* Products */,
-				0D1A2CE269114B2BD9EB25CE /* Pods */,
-				1707A1850FAC8B2EDAED2FC7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -95,11 +71,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3E2B20A7219C7DD000EF472A /* Build configuration list for PBXNativeTarget "RecordMe" */;
 			buildPhases = (
-				C71AC7849E8457372E236E95 /* [CP] Check Pods Manifest.lock */,
 				3E2B2091219C7DCE00EF472A /* Sources */,
 				3E2B2092219C7DCE00EF472A /* Frameworks */,
 				3E2B2093219C7DCE00EF472A /* Resources */,
-				B1DE23F3AF608A4806AF0DDF /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -155,55 +129,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		B1DE23F3AF608A4806AF0DDF /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-RecordMe/Pods-RecordMe-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/Realm/Realm.framework",
-				"${BUILT_PRODUCTS_DIR}/RealmSwift/RealmSwift.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Realm.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RealmSwift.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-RecordMe/Pods-RecordMe-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C71AC7849E8457372E236E95 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-RecordMe-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		3E2B2091219C7DCE00EF472A /* Sources */ = {
@@ -355,7 +280,6 @@
 		};
 		3E2B20A8219C7DD000EF472A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BCE4A4F11E0D5273B8C258E8 /* Pods-RecordMe.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -374,7 +298,6 @@
 		};
 		3E2B20A9219C7DD000EF472A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D628A3E3E3C3DF55FE72D377 /* Pods-RecordMe.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
