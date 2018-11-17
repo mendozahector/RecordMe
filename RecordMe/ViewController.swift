@@ -18,6 +18,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     var audioRecorder: AVAudioRecorder!
     var audioPlayer: AVAudioPlayer!
     var meterTimer: Timer!
+    var seconds: Int = 1
     
     var isAudioRecordingGranted: Bool!
     var isRecording = false
@@ -27,7 +28,6 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         if isRecording {
             
-            meterTimer.invalidate()
             audioRecorder.stop()
         } else {
             
@@ -35,7 +35,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
             
             audioRecorder.record()
             isRecording = true
-            meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
+            meterTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
             recordButton.setTitle("Stop", for: .normal)
             playButton.isEnabled = false
         }
@@ -72,11 +72,16 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         if isRecording {
             
-            let hr = Int((audioRecorder.currentTime / 60) / 60)
-            let min = Int(audioRecorder.currentTime / 60)
-            let sec = Int(audioRecorder.currentTime.truncatingRemainder(dividingBy: 60))
+            let hr = Int(seconds / 3600)
+            let min = Int(seconds / 60) % 60
+            let sec = Int(seconds % 60)
+//            BUG: .currenTime changes after AVAudioRouteChange
+//            let hr = Int((audioRecorder.currentTime / 60) / 60)
+//            let min = Int(audioRecorder.currentTime / 60)
+//            let sec = Int(audioRecorder.currentTime.truncatingRemainder(dividingBy: 60))
             let timeString = String(format: "%02d:%02d:%02d", hr, min, sec)
             timeLabel.text = timeString
+            seconds += 1
         }
         
         if isPlaying {
@@ -98,6 +103,8 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
             displayAlert(title: "Error", message: "Recording failed.")
         }
         
+        meterTimer.invalidate()
+        seconds = 1
         audioRecorder = nil
         recordButton.setTitle("Record", for: .normal)
         playButton.isEnabled = true
@@ -113,6 +120,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
             displayAlert(title: "Error", message: "Could not play audio file.")
         }
         
+        meterTimer.invalidate()
         audioPlayer.stop()
         recordButton.isEnabled = true
         playButton.setTitle("Play", for: .normal)
@@ -128,6 +136,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     
     
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        print("Did finish playing")
         finishAudioPlaying(success: flag)
     }
     
@@ -186,13 +195,11 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         case .newDeviceAvailable:
             if isRecording {
                 
-                meterTimer.invalidate()
                 audioRecorder.stop()
             }
         case .oldDeviceUnavailable:
             if isRecording {
                 
-                meterTimer.invalidate()
                 audioRecorder.stop()
             }
         default: ()
