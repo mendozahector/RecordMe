@@ -23,11 +23,11 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     var isRecording = false
     var isPlaying = false
     
-    
     @IBAction func recordTapped(_ sender: UIButton) {
         
         if isRecording {
             
+            meterTimer.invalidate()
             audioRecorder.stop()
         } else {
             
@@ -70,14 +70,14 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     
     @objc func updateAudioMeter(timer: Timer) {
         
-//        if isRecording {
-//
-//            let hr = Int((audioRecorder.currentTime / 60) / 60)
-//            let min = Int(audioRecorder.currentTime / 60)
-//            let sec = Int(audioRecorder.currentTime.truncatingRemainder(dividingBy: 60))
-//            let timeString = String(format: "%02d:%02d:%02d", hr, min, sec)
-//            timeLabel.text = timeString
-//        }
+        if isRecording {
+            
+            let hr = Int((audioRecorder.currentTime / 60) / 60)
+            let min = Int(audioRecorder.currentTime / 60)
+            let sec = Int(audioRecorder.currentTime.truncatingRemainder(dividingBy: 60))
+            let timeString = String(format: "%02d:%02d:%02d", hr, min, sec)
+            timeLabel.text = timeString
+        }
         
         if isPlaying {
             
@@ -98,7 +98,6 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
             displayAlert(title: "Error", message: "Recording failed.")
         }
         
-        meterTimer.invalidate()
         audioRecorder = nil
         recordButton.setTitle("Record", for: .normal)
         playButton.isEnabled = true
@@ -127,6 +126,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     }
     
     
+    
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         finishAudioPlaying(success: flag)
     }
@@ -136,6 +136,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         super.viewDidLoad()
         
         checkRecordPermission()
+        setupNotifications()
     }
     
     
@@ -165,6 +166,40 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     }
     
     
+    //Let's setup our notifications
+    func setupNotifications() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleRouteChange),
+                                               name: AVAudioSession.routeChangeNotification,
+                                               object: AVAudioSession.sharedInstance())
+    }
+    
+    
+    //Let's handle audio session route changes
+    @objc func handleRouteChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+            let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+            let reason = AVAudioSession.RouteChangeReason(rawValue:reasonValue) else {
+                return
+        }
+        switch reason {
+        case .newDeviceAvailable:
+            if isRecording {
+                
+                meterTimer.invalidate()
+                audioRecorder.stop()
+            }
+        case .oldDeviceUnavailable:
+            if isRecording {
+                
+                meterTimer.invalidate()
+                audioRecorder.stop()
+            }
+        default: ()
+        }
+    }
+    
+    
     //Path to where to save recordings
     func getDirectory() -> URL {
         
@@ -187,9 +222,9 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         if isAudioRecordingGranted {
             
-            let session = AVAudioSession.sharedInstance()
             do {
                 
+                let session = AVAudioSession.sharedInstance()
                 try session.setCategory(.playAndRecord, mode: .default, options: .defaultToSpeaker)
                 try session.setActive(true)
                 let settings = [
