@@ -11,8 +11,9 @@ import AVFoundation
 
 class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     
+    @IBOutlet weak var recordingsTableView: UITableView!
     @IBOutlet weak var recordButton: UIButton!
-    @IBOutlet weak var playButton: UIButton!
+    @IBOutlet weak var pauseButton: UIButton!
     @IBOutlet weak var timeLabel: UILabel!
     
     var audioRecorder: AVAudioRecorder!
@@ -23,6 +24,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     var isAudioRecordingGranted: Bool!
     var isRecording = false
     var isPlaying = false
+    var isPaused = false
     
     @IBAction func recordTapped(_ sender: UIButton) {
         
@@ -34,10 +36,9 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
             if setupRecorder() {
                 
                 audioRecorder.record()
+                pauseButton.isHidden = false
                 isRecording = true
                 meterTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
-                recordButton.setTitle("Stop", for: .normal)
-                playButton.isEnabled = false
             }
             
         }
@@ -45,51 +46,67 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     }
     
     
-    @IBAction func playTapped(_ sender: UIButton) {
+    @IBAction func pauseTapped(_ sender: UIButton) {
         
-        if isPlaying {
+        if isRecording && !isPaused {
             
-            finishAudioPlaying(success: true)
-        } else {
+            audioRecorder.pause()
+        } else if isRecording && isPaused {
             
-            if FileManager.default.fileExists(atPath: getFileUrl().path) {
-                
-                if setupPlay() {
-                    
-                    audioPlayer.play()
-                    isPlaying = true
-                    meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
-                    playButton.setTitle("Stop", for: .normal)
-                    recordButton.isEnabled = false
-                }
-                
-            } else {
-                
-                displayAlert(title: "Error", message: "Audio file is missing.")
-            }
-            
+            audioRecorder.record()
         }
         
+        if isPlaying && !isPaused {
+            
+            audioPlayer.pause()
+        } else if isPlaying && isPaused {
+            
+            audioPlayer.play()
+        }
+        
+        isPaused = !isPaused
     }
+    
+    
+//    @IBAction func playTapped(_ sender: UIButton) {
+//
+//        if isPlaying {
+//
+//            finishAudioPlaying(success: true)
+//        } else {
+//
+//            if FileManager.default.fileExists(atPath: getFileUrl().path) {
+//
+//                if setupPlay() {
+//
+//                    audioPlayer.play()
+//                    isPlaying = true
+//                    meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
+//                }
+//
+//            } else {
+//
+//                displayAlert(title: "Error", message: "Audio file is missing.")
+//            }
+//
+//        }
+//
+//    }
     
     
     @objc func updateAudioMeter(timer: Timer) {
         
-        if isRecording {
+        if isRecording && !isPaused {
             
             let hr = Int(seconds / 3600)
             let min = Int(seconds / 60) % 60
             let sec = Int(seconds % 60)
-//            BUG: .currenTime changes after AVAudioRouteChange
-//            let hr = Int((audioRecorder.currentTime / 60) / 60)
-//            let min = Int(audioRecorder.currentTime / 60)
-//            let sec = Int(audioRecorder.currentTime.truncatingRemainder(dividingBy: 60))
             let timeString = String(format: "%02d:%02d:%02d", hr, min, sec)
             timeLabel.text = timeString
             seconds += 1
         }
         
-        if isPlaying {
+        if isPlaying && !isPaused {
             
             let hr = Int((audioPlayer.currentTime / 60) / 60)
             let min = Int(audioPlayer.currentTime / 60)
@@ -111,8 +128,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         meterTimer.invalidate()
         seconds = 1
         audioRecorder = nil
-        recordButton.setTitle("Record", for: .normal)
-        playButton.isEnabled = true
+        pauseButton.isHidden = true
         isRecording = false
         timeLabel.text = "00:00:00"
     }
@@ -127,8 +143,7 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         meterTimer.invalidate()
         audioPlayer.stop()
-        recordButton.isEnabled = true
-        playButton.setTitle("Play", for: .normal)
+        pauseButton.isHidden = true
         isPlaying = false
         timeLabel.text = "00:00:00"
     }
@@ -151,6 +166,12 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         checkRecordPermission()
         setupNotifications()
+        setupTableView()
+    }
+    
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
     }
     
     
@@ -294,3 +315,34 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     
 }
 
+
+
+//MARK: - TableView Methods
+extension ViewController: UITableViewDelegate, UITableViewDataSource {
+    
+    func setupTableView() {
+        recordingsTableView.delegate = self
+        recordingsTableView.dataSource = self
+        //cityListTableView.tableFooterView = UIView()
+        //cityListTableView.rowHeight = 80.0
+    }
+    
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "recordingCell", for: indexPath)
+        cell.textLabel?.text = "Recording 1"
+        return cell
+    }
+    
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("Row selected: \(indexPath.row)")
+    }
+    
+}
