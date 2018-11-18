@@ -26,21 +26,33 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     var isPlaying = false
     var isPaused = false
     
+    var fileNames: [String] = []
+    let defaults = UserDefaults.standard
+    
     @IBAction func recordTapped(_ sender: UIButton) {
         
-        if isRecording {
-            
-            audioRecorder.stop()
-        } else {
+        if !isRecording && !isPlaying {
             
             if setupRecorder() {
                 
                 audioRecorder.record()
                 pauseButton.isHidden = false
+                recordButton.setImage(UIImage(named: "stop"), for: .normal)
                 isRecording = true
                 meterTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
             }
             
+            return
+        }
+        
+        if isRecording {
+            
+            audioRecorder.stop()
+        }
+        
+        if isPlaying {
+            
+            finishAudioPlaying(success: true)
         }
         
     }
@@ -66,32 +78,6 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         isPaused = !isPaused
     }
-    
-    
-//    @IBAction func playTapped(_ sender: UIButton) {
-//
-//        if isPlaying {
-//
-//            finishAudioPlaying(success: true)
-//        } else {
-//
-//            if FileManager.default.fileExists(atPath: getFileUrl().path) {
-//
-//                if setupPlay() {
-//
-//                    audioPlayer.play()
-//                    isPlaying = true
-//                    meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
-//                }
-//
-//            } else {
-//
-//                displayAlert(title: "Error", message: "Audio file is missing.")
-//            }
-//
-//        }
-//
-//    }
     
     
     @objc func updateAudioMeter(timer: Timer) {
@@ -122,6 +108,9 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         
         if !success {
             
+            let lastRecordingIndex = fileNames.count - 1
+            fileNames.remove(at: lastRecordingIndex)
+            defaults.set(fileNames, forKey: "storedNames")
             displayAlert(title: "Error", message: "Recording failed.")
         }
         
@@ -129,8 +118,10 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         seconds = 1
         audioRecorder = nil
         pauseButton.isHidden = true
+        recordButton.setImage(UIImage(named: "record"), for: .normal)
         isRecording = false
         timeLabel.text = "00:00:00"
+        recordingsTableView.reloadData()
     }
     
     
@@ -145,6 +136,8 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
         audioPlayer.stop()
         pauseButton.isHidden = true
         isPlaying = false
+        pauseButton.isHidden = true
+        recordButton.setImage(UIImage(named: "record"), for: .normal)
         timeLabel.text = "00:00:00"
     }
     
@@ -156,7 +149,6 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     
     
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        print("Did finish playing")
         finishAudioPlaying(success: flag)
     }
     
@@ -164,9 +156,16 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if let storedNames = defaults.array(forKey: "storedNames") as? [String] {
+            
+            fileNames = storedNames
+            recordingsTableView.reloadData()
+        }
+        
         checkRecordPermission()
         setupNotifications()
         setupTableView()
+        setupLongPressGesture()
     }
     
     
@@ -244,9 +243,8 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     
     
     //Directory + fileName = filePath
-    func getFileUrl() -> URL {
+    func getFileUrl(fileName: String) -> URL {
         
-        let fileName = "myRecording1.m4a"
         let filePath = getDirectory().appendingPathComponent(fileName)
         return filePath
     }
@@ -268,7 +266,11 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
                     AVEncoderAudioQualityKey:AVAudioQuality.high.rawValue
                 ]
                 
-                audioRecorder = try AVAudioRecorder(url: getFileUrl(), settings: settings)
+                let fileName: String = "\(UUID().uuidString).m4a"
+                let fileUrl: URL = getFileUrl(fileName: fileName)
+                audioRecorder = try AVAudioRecorder(url: fileUrl, settings: settings)
+                fileNames.append(fileName)
+                defaults.set(fileNames, forKey: "storedNames")
                 audioRecorder.delegate = self
                 audioRecorder.prepareToRecord()
                 return true
@@ -286,11 +288,11 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
     }
     
     
-    func setupPlay() -> Bool {
+    func setupPlay(url: URL) -> Bool {
         
         do {
             
-            audioPlayer = try AVAudioPlayer(contentsOf: getFileUrl())
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer.delegate = self
             audioPlayer.prepareToPlay()
             return true
@@ -317,32 +319,91 @@ class ViewController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDe
 
 
 
-//MARK: - TableView Methods
-extension ViewController: UITableViewDelegate, UITableViewDataSource {
+//MARK: - TableView Methods & Long Gesture Recognizer
+extension ViewController: UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
     
     func setupTableView() {
         recordingsTableView.delegate = self
         recordingsTableView.dataSource = self
-        //cityListTableView.tableFooterView = UIView()
-        //cityListTableView.rowHeight = 80.0
+        recordingsTableView.tableFooterView = UIView()
+        recordingsTableView.rowHeight = 80.0
     }
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return fileNames.count
     }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "recordingCell", for: indexPath)
-        cell.textLabel?.text = "Recording 1"
+        cell.textLabel?.text = "Recording \(indexPath.row + 1)"
         return cell
     }
     
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("Row selected: \(indexPath.row)")
+        
+        playRecording(atUrl: getFileUrl(fileName: fileNames[indexPath.row]))
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    
+    func playRecording(atUrl: URL) {
+        
+        if FileManager.default.fileExists(atPath: atUrl.path) {
+            
+            if setupPlay(url: atUrl) {
+                
+                audioPlayer.play()
+                isPlaying = true
+                pauseButton.isHidden = false
+                recordButton.setImage(UIImage(named: "stop"), for: .normal)
+                meterTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateAudioMeter(timer:)), userInfo: nil, repeats: true)
+            }
+            
+        } else {
+            
+            displayAlert(title: "Error", message: "Audio file is missing.")
+        }
+        
+    }
+    
+    
+    func setupLongPressGesture() {
+        let longPressGesture:UILongPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(self.handleLongPress))
+        longPressGesture.minimumPressDuration = 1.0 // 1 second press
+        longPressGesture.delegate = self
+        self.recordingsTableView.addGestureRecognizer(longPressGesture)
+    }
+    
+    
+    @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer){
+        
+        if gestureRecognizer.state == .ended {
+            let touchPoint = gestureRecognizer.location(in: self.recordingsTableView)
+            if let indexPath = recordingsTableView.indexPathForRow(at: touchPoint) {
+                
+                deleteRecording(index: indexPath.row)
+            }
+        }
+        
+    }
+    
+    func deleteRecording(index: Int) {
+        
+        do {
+            
+            try FileManager.default.removeItem(at: getFileUrl(fileName: fileNames[index]))
+            fileNames.remove(at: index)
+            defaults.set(fileNames, forKey: "storedNames")
+            recordingsTableView.reloadData()
+        } catch {
+            
+            displayAlert(title: "Error", message: "Could not delete recording.")
+        }
+        
     }
     
 }
