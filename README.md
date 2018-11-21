@@ -1,20 +1,22 @@
-# Todoey
-Using Realm to create a persistive todo list app.
+# RecordMe
+Using AVFoundation to create my personal recording app, implementing data persistence with App Sandboxing.
 
-- User's can add a todo list category.
-- Todo items inside categories can be saved as checked or unchecked.
-- Categories and items are custom cells programmed with swipe deletion (SwipeCellKit).
-- User's interface programmed with ChameleonFramework.
+- User's can record voice memos.
+- User's can play saved recordings.
+- Ability to pause(), resume(), and stop() audio recorder and audio player.
+- UIAlert handler: Long press on item to delete recording.
+- Notification/Observer onRouteChange (Headphones connected/disconnected).
 
 ### Skills
+* AVFoundation
+* Notifications/Observers
 * Auto Layout
-* MVC design pattern
+* MVC Design Pattern
 * Custom Cells
-* Persistent Local Data Storage (Realm)
-* CocoaPods(RealmSwift, SwipeCellKit, ChameleonFramework)
+* Persistent Local Data Storage (UserDefaults, FileManager/Sandboxing)
 
 
 ## Finished App
-<img src="todoey.gif" width="250">
+<img src="recordme.gif" width="250">
 
 Copyright © Hector Mendoza
