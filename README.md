@@ -1,8 +1,8 @@
 # RecordMe
-Using AVFoundation to create my personal recording app, implementing data persistence with App Sandboxing.
+Using AVFoundation to create a personal recording app, implementing data persistence with App Sandboxing.
 
-- User's can record voice memos.
-- User's can play saved recordings.
+- Users can record voice memos.
+- Users can play saved recordings.
 - Ability to pause(), resume(), and stop() audio recorder and audio player.
 - UIAlert handler: Long press on item to delete recording.
 - Notification/Observer onRouteChange (Headphones connected/disconnected).
