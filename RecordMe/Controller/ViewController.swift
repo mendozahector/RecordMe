@@ -381,7 +381,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource, UIGestureR
     
     @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer){
         
-        if gestureRecognizer.state == .ended {
+        if gestureRecognizer.state == .began {
             let touchPoint = gestureRecognizer.location(in: self.recordingsTableView)
             if let indexPath = recordingsTableView.indexPathForRow(at: touchPoint) {
                 
@@ -393,17 +393,27 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource, UIGestureR
     
     func deleteRecording(index: Int) {
         
-        do {
+        let alert = UIAlertController(title: "Delete Recording", message: "Are you sure you want to delete Recording \(index + 1)?", preferredStyle: .alert)
+        
+        let deleteAction = UIAlertAction(title: "Delete", style: .default) { (action) in
             
-            try FileManager.default.removeItem(at: getFileUrl(fileName: fileNames[index]))
-            fileNames.remove(at: index)
-            defaults.set(fileNames, forKey: "storedNames")
-            recordingsTableView.reloadData()
-        } catch {
+            do {
+                
+                try FileManager.default.removeItem(at: self.getFileUrl(fileName: self.fileNames[index]))
+                self.fileNames.remove(at: index)
+                self.defaults.set(self.fileNames, forKey: "storedNames")
+                self.recordingsTableView.reloadData()
+            } catch {
+                
+                self.displayAlert(title: "Error", message: "Could not delete recording.")
+            }
             
-            displayAlert(title: "Error", message: "Could not delete recording.")
         }
         
+        alert.addAction(deleteAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(alert, animated: true, completion: nil)
     }
     
 }
